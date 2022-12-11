@@ -1,0 +1,73 @@
+text
+
+url --url="https://download.rockylinux.org/pub/rocky/9.1/BaseOS/x86_64/os/"
+
+firstboot --disable
+keyboard --vckeymap=us --xlayouts=''
+lang en_US.UTF-8
+
+network  --bootproto=dhcp --ipv6=auto --activate --hostname=bot
+
+rootpw --plaintext "bot-password"
+sshkey --username root "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDiUGsKfk+ChxZomyaJfMlYANNOMx0FcTDBl9NeSszVBkBnYWwkg29r+h1aBTVKLQYC4SnNR+G+kayY1MQodZa9tPJH2BtD+RkpFYcfALxoQ2IhkOBzCy5NqDf1E8R7RB11MvGnSjpFhagzImtd5ZBhUX8kgt4Is770vfAm0UfEmMXFbyRSFkeuU2qfofU8vOxhWEqH9o+t17qYVOO4yn3lK2iGFeqbDyFvsx744dtT8jlzIbPC3YgZPizksHkuYNnw/1hDWRUezPeUUq2iGQw9J/gj8iUkPKStDgjWT9z2DIvKuBAV0l/kcbO1mRwDOOVaBMJnQ/SHx0BRq6eULH22uBykmzV4hC2SVeew95wuVXerBijIVTWOqBbsItMGhvNmE/nyiavG42gFUR7Z8YCoI0O3QEylam2VUch9G1ypqdVo4laPQ+ygmnNKahE71OzSdZdwTvqrjf4Rbf7pZS59jPaIMcU7iMsPjgyd50xRzutko+98rBwz1qjINjeyIjs= itamarjp@fedoraproject.org"
+
+services --disabled="auditd, cups,smartd, nfslock"
+services --enabled="chronyd, rngd, sshd"
+
+skipx
+timezone America/Sao_Paulo --utc
+bootloader --location=mbr --append="selinux=0 mitigations=off audit=0 console=ttyS0 console=tty1"
+
+firewall --disabled
+selinux --disabled
+
+clearpart --all  --initlabel
+autopart --nolvm  --nohome --type plain
+
+reboot
+
+%packages --ignoremissing
+@core
+rng-tools
+wget
+#systemd-resolved
+epel-release
+%end
+
+
+%post --log=/root/ks-post.log
+
+sed -i -r -e '/^GRUB_CMDLINE_LINUX=/{s/(\s*)\"$/ console=ttyS0 console=tty1\"/;}' /etc/default/grub
+
+mkdir -p /etc/systemd/network/
+
+echo "[Match]
+Name=e*
+
+[Network]
+DHCP=yes" > /etc/systemd/network/eth0.network
+
+systemctl enable serial-getty@ttyS0.service
+
+
+#no systemd-networkd in el9
+#systemctl disable NetworkManager
+#systemct enable systemd-resolved
+#systemct enable systemd-networkd
+
+echo "blacklist pcspkr" > /etc/modprobe.d/nobeep.conf
+echo 'GRUB_SERIAL_COMMAND="serial --speed=115200 --unit=0 --word=8 --parity=no --stop=1"' >> /etc/default/grub
+sed -i 's/^GRUB_TERMINAL_OUTPUT=".*"$/GRUB_TERMINAL="serial console"/g' /etc/default/grub
+
+grubby --update-kernel=ALL --args=selinux=0
+grubby --update-kernel=ALL --args=mitigations=off
+grubby --update-kernel=ALL --args=audit=0
+grubby --update-kernel=ALL --args="console=tty1 console=ttyS0"
+grubby --update-kernel=ALL --args=earlyprintk=ttyS0
+grubby --update-kernel=ALL --args=net.ifnames=0
+grubby --update-kernel=ALL --args=no_timer_check
+
+# Rebuild grub.cfg
+grub2-mkconfig -o /boot/grub2/grub.cfg
+
+%end
