@@ -7,21 +7,23 @@ keyboard --vckeymap=us --xlayouts=''
 lang en_US.UTF-8
 
 network  --bootproto=dhcp --ipv6=auto --activate --hostname=bot
+auth --enableshadow --passalgo=sha512
 
 rootpw --plaintext "bot-password"
 sshkey --username root "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDiUGsKfk+ChxZomyaJfMlYANNOMx0FcTDBl9NeSszVBkBnYWwkg29r+h1aBTVKLQYC4SnNR+G+kayY1MQodZa9tPJH2BtD+RkpFYcfALxoQ2IhkOBzCy5NqDf1E8R7RB11MvGnSjpFhagzImtd5ZBhUX8kgt4Is770vfAm0UfEmMXFbyRSFkeuU2qfofU8vOxhWEqH9o+t17qYVOO4yn3lK2iGFeqbDyFvsx744dtT8jlzIbPC3YgZPizksHkuYNnw/1hDWRUezPeUUq2iGQw9J/gj8iUkPKStDgjWT9z2DIvKuBAV0l/kcbO1mRwDOOVaBMJnQ/SHx0BRq6eULH22uBykmzV4hC2SVeew95wuVXerBijIVTWOqBbsItMGhvNmE/nyiavG42gFUR7Z8YCoI0O3QEylam2VUch9G1ypqdVo4laPQ+ygmnNKahE71OzSdZdwTvqrjf4Rbf7pZS59jPaIMcU7iMsPjgyd50xRzutko+98rBwz1qjINjeyIjs= itamarjp@fedoraproject.org"
 
-services --disabled="auditd, cups,smartd, nfslock"
+services --disabled="auditd, cups,smartd, nfslock,kdump,rhsmcertd"
 services --enabled="chronyd, rngd, sshd"
 
 skipx
 timezone America/Sao_Paulo --utc
-bootloader --location=mbr --append="selinux=0 mitigations=off audit=0 console=ttyS0 console=tty1"
+bootloader --location=mbr --append="selinux=0 mitigations=off audit=0 console=ttyS0,115200n8 no_timer_check crashkernel=auto net.ifnames=0 console=tty1"  --location=mbr --timeout=1
 
 firewall --disabled
 selinux --disabled
 
-clearpart --all  --initlabel
+zerombr
+clearpart --all  --initlabel -disklabel=gpt
 autopart --nolvm  --nohome --type plain
 
 reboot
@@ -32,6 +34,36 @@ rng-tools
 wget
 #systemd-resolved
 epel-release
+qemu-guest-agent
+
+-biosdevname
+-plymouth
+-aic94xx-firmware
+-alsa-firmware
+-alsa-lib
+-alsa-tools-firmware
+-ivtv-firmware
+-iwl1000-firmware
+-iwl100-firmware
+-iwl105-firmware
+-iwl135-firmware
+-iwl2000-firmware
+-iwl2030-firmware
+-iwl3160-firmware
+-iwl3945-firmware
+-iwl4965-firmware
+-iwl5000-firmware
+-iwl5150-firmware
+-iwl6000-firmware
+-iwl6000g2a-firmware
+-iwl6000g2b-firmware
+-iwl6050-firmware
+-iwl7260-firmware
+-libertas-sd8686-firmware
+-libertas-sd8787-firmware
+-libertas-usb8388-firmware
+-dracut-config-rescue
+-linux-firmware
 %end
 
 
@@ -69,5 +101,6 @@ grubby --update-kernel=ALL --args=no_timer_check
 
 # Rebuild grub.cfg
 grub2-mkconfig -o /boot/grub2/grub.cfg
+echo "virtual-guest" > /etc/tuned/active_profile
 
 %end
