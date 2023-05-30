@@ -1,5 +1,5 @@
 cd /boot
-wget -Nc https://dl.rockylinux.org/pub/rocky/9.1/BaseOS/x86_64/os/images/pxeboot/vmlinuz
-wget -Nc https://dl.rockylinux.org/pub/rocky/9.1/BaseOS/x86_64/os/images/pxeboot/initrd.img
+wget -Nc https://dl.rockylinux.org/pub/rocky/9.2/BaseOS/x86_64/os/images/pxeboot/vmlinuz
+wget -Nc https://dl.rockylinux.org/pub/rocky/9.2/BaseOS/x86_64/os/images/pxeboot/initrd.img
 
-grubby --add-kernel=vmlinuz --title="Reinstall Rocky 9.1" --initrd="initrd.img" --args="inst.ks=https://dl.ispbrasil.com.br/rockylinux9-ks.txt inst.text inst.selinux=0 biosdevname=0 mitigations=off net.ifnames=0 audit=0 console=ttyS0 console=tty1 noshell inst.sshd=0"
+grubby --add-kernel=vmlinuz --title="Reinstall Rocky 9.2" --initrd="initrd.img" --args="inst.ks=https://raw.githubusercontent.com/itamarjp/kickstart-reinstall/master/rockylinux9-ks.txt inst.text inst.selinux=0 biosdevname=0 mitigations=off net.ifnames=0 audit=0 console=ttyS0 console=tty1 noshell inst.sshd=0"
