@@ -1,6 +1,6 @@
 text
 
-url --url="https://download.rockylinux.org/pub/rocky/9.1/BaseOS/x86_64/os/"
+url --url="https://download.rockylinux.org/pub/rocky/9.2/BaseOS/x86_64/os/"
 
 firstboot --disable
 keyboard --vckeymap=us --xlayouts=''
